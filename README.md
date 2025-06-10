@@ -47,9 +47,6 @@ To run Health Pulse+ locally, simply:
 
 No special server setup or build process is required!
 
-## 📸 Screenshots
-
-*(You would typically add screenshots here to showcase your app's appearance. For example, you could include images of the main calculator, the theme switcher open, and the results section.)*
 
 ## 📈 Future Enhancements
 
