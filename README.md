@@ -2,6 +2,14 @@
 
 Health Pulse+ is a modern, responsive web-based health calculator designed to provide you with essential health metrics, daily calorie needs, and target heart rate zones. With a sleek, gradient-based interface and customizable themes, it offers an intuitive way to track key indicators for a healthier lifestyle.
 
+## 🚀 Live Demo
+
+Experience Health Pulse+ live! Click the link below to try it out:
+
+[**Health Pulse+ Demo**](https://healthpluse.netlify.app/)
+
+---
+
 ## ✨ Features
 
 * **BMI Calculation:** Accurately calculate your Body Mass Index (BMI) and categorize your results (e.g., Normal, Overweight, Obese).
