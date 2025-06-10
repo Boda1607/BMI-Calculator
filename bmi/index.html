@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Pulse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="1.png" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#30cfd0" /> <style>
+        /* Define CSS Variables for the main theme colors */
+        :root {
+            --main-color:  #30cfd0; /* Default start color of the gradient */
+            --main-color2: #330867; /* Default end color of the gradient */
+        }
+
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            /* Main Gradient Background - uses CSS variables */
+            background-image: linear-gradient(to right top, var(--main-color), var(--main-color2));
+            background-attachment: fixed;
+            color: #333; /* Default text color, will be overridden for gradient elements */
+            transition: background-image 0.5s ease, color 0.3s; /* Smooth transition for theme changes */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff; /* Default fallback, overridden by gradient below */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            margin-bottom: 20px;
+            /* Card background - uses the same gradient */
+            background-image: linear-gradient(to right top, var(--main-color), var(--main-color2));
+            color: white; /* Text on card should be white for contrast */
+            transition: background-image 0.5s ease; /* Smooth transition for theme changes */
+        }
+
+        h1 {
+            color: white; /* Heading on gradient card */
+            margin-bottom: 20px;
+        }
+
+        .theme-switcher {
+            position: fixed; /* Keep it in view when scrolling */
+            top: 22px;
+            right: 20px;
+            z-index: 110;
+        }
+
+        .theme-button {
+            background: transparent;
+            border: none;
+            font-size: 28px; /* Larger icon */
+            color: white; /* White icon on gradient background */
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .theme-button:hover,
+        .theme-button:focus {
+            transform: scale(1.2);
+            outline: none;
+        }
+
+        /* Style for the SVG icon within the button */
+        .theme-button svg {
+            width: 28px; /* Match font-size */
+            height: 28px; /* Match font-size */
+            vertical-align: middle; /* Align icon vertically */
+        }
+
+        .theme-list {
+            display: none;
+            position: absolute;
+            right: 0;
+            margin-top: 10px;
+            background: linear-gradient(to bottom, var(--main-color), rgba(var(--main-color2), 0.8)); /* A gradient background */
+            color: white;
+            padding: 0.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            max-width: 200px;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .theme-list.show {
+            display: flex;
+        }
+
+        .theme-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .theme-color:hover {
+            transform: scale(1.3);
+            border-color: #000;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white; /* Labels on gradient card */
+        }
+
+        .input-group label {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        /* Styles for input fields and select, mimicking #shortcutSearch */
+        .input-group input[type="number"],
+        .input-group select {
+            flex: 2;
+            padding: 10px 15px; /* Updated padding */
+            border: none; /* No border */
+            border-radius: 12px; /* Updated border-radius */
+            font-size: 16px;
+            width: calc(100% - 22px);
+            background: linear-gradient(to right, var(--main-color), var(--main-color2)); /* Gradient background */
+            color: rgba(0, 0, 0, 0.856); /* Ensure text is readable */
+            box-shadow: 0 0 8px rgba(255 255 255 / 0.2); /* Box shadow */
+            outline: none; /* Remove default outline */
+            transition: box-shadow 0.3s ease, background 0.3s ease; /* Transitions */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .input-group input[type="number"]::placeholder { /* Style for placeholder text */
+            color: rgba(255 255 255 / 0.7); /* Placeholder color */
+        }
+
+        /* Custom arrow for select on gradient background */
+        .input-group select {
+            background-image: linear-gradient(to right top, var(--main-color), var(--main-color2)), /* Gradient for select - Adjusted */
+                              url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-6.5%200-12.3%203.1-16.1%208.1-3.9%205-4.2%2011.5-1.1%2016.5l139.5%20182c4.3%205.6%2011.6%208.7%2019%208.7s14.7-3.1%2019-8.7l139.5-182c3.2-5%202.9-11.5-1.1-16.5z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            padding-right: 30px;
+        }
+
+        /* Focus styles for input and select */
+        .input-group input[type="number"]:focus,
+        .input-group select:focus {
+            box-shadow: 0 0 12px rgba(255 255 255 / 0.8); /* Focus shadow */
+            background: linear-gradient(to right, var(--main-color2), var(--main-color)); /* Reversed gradient on focus */
+        }
+
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Gradient for buttons - same as body background */
+        .button-group button {
+            flex: 1;
+            background-image: linear-gradient(to right top, var(--main-color), var(--main-color2));
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: opacity 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, background-image 0.5s ease;
+            margin-top: 0;
+            width: auto;
+            background-size: 200% 100%; /* For subtle animation on hover */
+            background-position: right center;
+        }
+
+        .button-group button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-position: left center; /* Shift gradient on hover */
+        }
+
+        .result-container {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border on gradient background */
+            padding-top: 20px;
+            color: white; /* Text inside result container */
+        }
+
+        .result-container h2 {
+            margin-bottom: 10px;
+            color: white; /* Headings within result container */
+        }
+
+        .result-container p {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .result-container p.bold-value {
+            font-weight: bold;
+            color: white; /* Bold values on gradient card */
+        }
+
+        /* Styling for calorie results */
+        .calorie-section, .heart-rate-section {
+            margin-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border */
+            padding-top: 15px;
+            text-align: left;
+        }
+
+        .calorie-section h3, .heart-rate-section h3 {
+            color: white; /* Headings in sections */
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .calorie-entry, .heart-rate-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2); /* Lighter dashed border */
+        }
+
+        .calorie-entry:last-child, .heart-rate-entry:last-child {
+            border-bottom: none;
+        }
+
+        .calorie-entry .label, .heart-rate-entry .label {
+            flex: 2;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8); /* Lighter labels */
+        }
+
+        .calorie-entry .value, .heart-rate-entry .value {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+            color: #28a745; /* Green for calories/values (can be adjusted for dark theme) */
+        }
+
+        .calorie-entry .percentage, .heart-rate-entry .info {
+            flex: 0.5;
+            text-align: right;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6); /* Lighter info text */
+        }
+
+        #bmiValue, #idealWeightResult, #healthyWeightRange, #weightToAdjust, #bmiPrimeValue, #ponderalIndexValue,
+        #maxHeartRateValue, #moderateHrRange, #vigorousHrRange {
+            font-weight: bold;
+            color: white; /* Ensure these values are white on gradient */
+        }
+
+        #bmiCategory {
+            font-weight: bold;
+        }
+
+        .bmi-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right,
+                #f0c200 0%,
+                #6ee700 25%,
+                #ff9d00 50%,
+                #ff3e00 75%
+            );
+            border-radius: 10px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bmi-bar .indicator {
+            width: 8px;
+            height: 100%;
+            background-color: white; /* White indicator for better visibility on gradient */
+            position: absolute;
+            left: 0%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            transition: left 0.5s ease-out;
+        }
+
+        .disclaimer {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6); /* Lighter disclaimer text */
+            margin-top: 20px;
+        }
+
+        .calorie-group {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border */
+        }
+
+        .calorie-group:last-of-type {
+            border-bottom: none;
+        }
+
+        .calorie-group-heading {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white; /* Heading on gradient background */
+            margin-top: 15px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .info-section, .credits-card {
+            background-color: #fff; /* Default fallback, will be overridden by gradient */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 500px;
+            text-align: left;
+            margin-bottom: 20px;
+            /* Apply the same gradient here */
+            background-image: linear-gradient(to right top, var(--main-color), var(--main-color2));
+            color: white; /* Text on info/credits card */
+            transition: background-image 0.5s ease;
+        }
+
+        .info-section:last-of-type, .credits-card:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .info-section h3 {
+            color: white; /* Heading on info card */
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-section ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .info-section ul li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .credits-card footer {
+            text-align: center;
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.8); /* Lighter footer text */
+            margin-top: 0;
+        }
+
+        .credits-card footer a {
+            color: white; /* White link on gradient */
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .credits-card footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switcher">
+        <button class="theme-button" onclick="toggleThemeMenu()">
+            <i class="fa-solid fa-palette"></i> </button>
+        <div id="themeList" class="theme-list">
+            </div>
+    </div>
+
+    <div class="container">
+        <h1>BMI Calculator</h1>
+
+        <div class="input-group">
+            <label for="height">Height:</label>
+            <input type="number" id="height" placeholder="e.g., 175 (cm)">
+            <select id="heightUnit">
+                <option value="cm">cm</option>
+                <option value="inches">inches</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="weight">Weight:</label>
+            <input type="number" id="weight" placeholder="e.g., 70 (kg) ">
+            <select id="weightUnit">
+                <option value="kg">kg</option>
+                <option value="lbs">lbs</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="age">Age:</label>
+            <input type="number" id="age" min="0" max="120" placeholder="e.g., 30">
+        </div>
+
+        <div class="input-group">
+            <label for="gender">Gender:</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="activity">Activity:</label>
+            <select id="activity">
+                <option value="sedentary">Sedentary (little to no exercise)</option>
+                <option value="light">Lightly active (exercise 1-3 times/week)</option>
+                <option value="moderate">Moderately active (exercise 3-5 times/week)</option>
+                <option value="very">Very active (exercise 6-7 times/week)</option>
+                <option value="extra">Extra active (very hard exercise/physical job)</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button id="calculateBtn">Calculate</button>
+            <button id="clearBtn">Clear</button>
+        </div>
+
+        <div class="result-container">
+            <h2>Your BMI: <span id="bmiValue">--</span></h2>
+            <p>Category: <span id="bmiCategory">--</span></p>
+            <div class="bmi-bar">
+                <div id="bmiIndicator" class="indicator"></div>
+            </div>
+            <p class="bold-value">Healthy BMI Range: 18.5 - 24.9 kg/m<sup>2</sup></p>
+            <p><span id="healthyWeightRange"></span></p>
+            <p><span id="idealWeightResult"></span></p>
+            <p><span id="weightToAdjust"></span></p>
+            <p>BMI Prime: <span id="bmiPrimeValue">--</span></p>
+            <p>Ponderal Index: <span id="ponderalIndexValue">--</span></p>
+
+            <div class="calorie-section">
+                <h3>Daily Calorie Needs</h3>
+
+                <div class="calorie-group">
+                    <div class="calorie-group-heading">Weight Loss</div>
+                    <div class="calorie-entry">
+                        <span class="label">Maintain Weight:</span>
+                        <span class="value" id="maintainCalories">--</span>
+                        <span class="percentage">100%</span>
+                    </div>
+                    <div class="calorie-entry">
+                        <span class="label">Mild Loss (0.25 kg/week):</span>
+                        <span class="value" id="mildLossCalories">--</span>
+                        <span class="percentage" id="mildLossPercentage">--%</span>
+                    </div>
+                    <div class="calorie-entry">
+                        <span class="label">Moderate Loss (0.5 kg/week):</span>
+                        <span class="value" id="normalLossCalories">--</span>
+                        <span class="percentage" id="normalLossPercentage">--%</span>
+                    </div>
+                    <div class="calorie-entry">
+                        <span class="label">Rapid Loss (1 kg/week):</span>
+                        <span class="value" id="extremeLossCalories">--</span>
+                        <span class="percentage" id="extremeLossPercentage">--%</span>
+                    </div>
+                </div>
+
+                <div class="calorie-group">
+                    <div class="calorie-group-heading">Weight Gain</div>
+                    <div class="calorie-entry">
+                        <span class="label">Mild Gain (0.25 kg/week):</span>
+                        <span class="value" id="mildGainCalories">--</span>
+                        <span class="percentage" id="mildGainPercentage">--%</span>
+                    </div>
+                    <div class="calorie-entry">
+                        <span class="label">Moderate Gain (0.5 kg/week):</span>
+                        <span class="value" id="normalGainCalories">--</span>
+                        <span class="percentage" id="normalGainPercentage">--%</span>
+                    </div>
+                    <div class="calorie-entry">
+                        <span class="label">Rapid Gain (1 kg/week):</span>
+                        <span class="value" id="extremeGainCalories">--</span>
+                        <span class="percentage" id="extremeGainPercentage">--%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="heart-rate-section">
+                <h3>Target Heart Rate Zones</h3>
+                <div class="heart-rate-entry">
+                    <span class="label">Maximum Heart Rate (MHR):</span>
+                    <span class="value" id="maxHeartRateValue">-- bpm</span>
+                    <span class="info">220 - Age</span>
+                </div>
+                <div class="heart-rate-entry">
+                    <span class="label">Moderate Intensity:</span>
+                    <span class="value" id="moderateHrRange">-- bpm</span>
+                    <span class="info">50-70% of MHR</span>
+                </div>
+                <div class="heart-rate-entry">
+                    <span class="label">Vigorous Intensity:</span>
+                    <span class="value" id="vigorousHrRange">-- bpm</span>
+                    <span class="info">70-85% of MHR</span>
+                </div>
+                <p class="disclaimer">Heart rate targets are estimates. Consult a doctor before starting a new exercise program.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3>Exercise Duration Guidelines</h3>
+        <ul>
+            <li>**Exercise:** 15-30 minutes of elevated heart rate activity.</li>
+            <li>**Intense exercise:** 45-120 minutes of elevated heart rate activity.</li>
+            <li>**Very intense exercise:** 2+ hours of elevated heart rate activity.</li>
+        </ul>
+    </div>
+
+    <div class="credits-card">
+        <footer>
+            Made with ❤️ by <a href="https://abdelrahmanz.netlify.app/" target="_blank">AbdElRahman</a>
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript Code
+        document.addEventListener('DOMContentLoaded', () => {
+            // Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(reg => {
+                            console.log('Service Worker registered:', reg.scope);
+                        })
+                        .catch(err => {
+                            console.log('Service Worker registration failed:', err);
+                        });
+                });
+            }
+
+            // Input Elements
+            const heightInput = document.getElementById('height');
+            const heightUnitSelect = document.getElementById('heightUnit');
+            const weightInput = document.getElementById('weight');
+            const weightUnitSelect = document.getElementById('weightUnit');
+            const ageInput = document.getElementById('age');
+            const genderSelect = document.getElementById('gender');
+            const activitySelect = document.getElementById('activity');
+
+            // Buttons
+            const calculateBtn = document.getElementById('calculateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            // BMI & General Metrics Output Elements
+            const bmiValueSpan = document.getElementById('bmiValue');
+            const bmiCategorySpan = document.getElementById('bmiCategory');
+            const bmiIndicator = document.getElementById('bmiIndicator');
+            const idealWeightResult = document.getElementById('idealWeightResult');
+            const healthyWeightRangeSpan = document.getElementById('healthyWeightRange');
+            const weightToAdjustSpan = document.getElementById('weightToAdjust');
+            const bmiPrimeValueSpan = document.getElementById('bmiPrimeValue');
+            const ponderalIndexValueSpan = document.getElementById('ponderalIndexValue');
+
+            // Calorie Output Elements
+            const maintainCaloriesSpan = document.getElementById('maintainCalories');
+            const mildLossCaloriesSpan = document.getElementById('mildLossCalories');
+            const mildLossPercentageSpan = document.getElementById('mildLossPercentage');
+            const normalLossCaloriesSpan = document.getElementById('normalLossCalories');
+            const normalLossPercentageSpan = document.getElementById('normalLossPercentage');
+            const extremeLossCaloriesSpan = document.getElementById('extremeLossCalories');
+            const extremeLossPercentageSpan = document.getElementById('extremeLossPercentage');
+            const mildGainCaloriesSpan = document.getElementById('mildGainCalories');
+            const mildGainPercentageSpan = document.getElementById('mildGainPercentage');
+            const normalGainCaloriesSpan = document.getElementById('normalGainCalories');
+            const normalGainPercentageSpan = document.getElementById('normalGainPercentage');
+            const extremeGainCaloriesSpan = document.getElementById('extremeGainCalories');
+            const extremeGainPercentageSpan = document.getElementById('extremeGainPercentage');
+
+            // Heart Rate Output Elements
+            const maxHeartRateValueSpan = document.getElementById('maxHeartRateValue');
+            const moderateHrRangeSpan = document.getElementById('moderateHrRange');
+            const vigorousHrRangeSpan = document.getElementById('vigorousHrRange');
+
+            // --- New Theme Switcher related JS ---
+            const themes = [
+                ['#4facfe', '#00f2fe'],
+                ['#ff9966', '#ff5e62'],
+                ['#4a00e0', '#8e2de2'],
+                ['#7F00FF', '#E100FF'],
+                ['#56CCF2', '#2F80ED'],
+                ['#43e97b', '#38f9d7'],
+                ['#f953c6', '#b91d73'],
+                ['#30cfd0', '#330867'],
+                ['#f7797d', '#FBD786'],
+                ['#00c3ff', '#ffff1c'],
+                ['#3a7bd5', '#3a6073'],
+                ['#FF512F', '#DD2476'],
+                ['#1D976C', '#93F9B9'],
+                ['#ff6a00', '#ee0979'],
+                ['#2193b0', '#6dd5ed'],
+                ['#cc2b5e', '#753a88'],
+
+                // Dark color themes
+                ['#232526', '#1c1c1c'],
+                ['#0f2027', '#203a43'],
+                ['#1c1c1c', '#282828'],
+                ['#232526', '#414345'],
+                ['#000000', '#434343'],
+                ['#141e30', '#243b55'],
+                ['#000428', '#004e92']
+            ];
+
+            const themeList = document.getElementById('themeList');
+
+            // Function to update the meta theme-color for PWA
+            function updateThemeColorMeta(color) {
+                let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+                if (!themeColorMeta) {
+                    themeColorMeta = document.createElement('meta');
+                    themeColorMeta.setAttribute('name', 'theme-color');
+                    document.head.appendChild(themeColorMeta);
+                }
+                themeColorMeta.setAttribute('content', color);
+            }
+
+            // Populate theme list with color swatches
+            themes.forEach(([c1, c2]) => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'theme-color';
+                colorDiv.style.background = `linear-gradient(to right, ${c1}, ${c2})`;
+                colorDiv.onclick = () => applyTheme(c1, c2);
+                themeList.appendChild(colorDiv);
+            });
+
+            function toggleThemeMenu() {
+                themeList.classList.toggle('show');
+            }
+            window.toggleThemeMenu = toggleThemeMenu; // Make globally accessible for onclick in HTML
+
+            function applyTheme(color1, color2) {
+                document.documentElement.style.setProperty('--main-color', color1);
+                document.documentElement.style.setProperty('--main-color2', color2);
+                themeList.classList.remove('show');
+
+                // Update the meta theme color
+                updateThemeColorMeta(color1);
+            }
+
+            // Initial theme application (from default root variables)
+            updateThemeColorMeta(getComputedStyle(document.documentElement).getPropertyValue('--main-color').trim());
+
+            // --- End New Theme Switcher related JS ---
+
+            // Event Listeners for calculator functions
+            calculateBtn.addEventListener('click', calculateAllMetrics);
+            clearBtn.addEventListener('click', resetAllFieldsAndInputs);
+
+            function calculateAllMetrics() {
+                let height = parseFloat(heightInput.value);
+                let weight = parseFloat(weightInput.value);
+                const age = parseInt(ageInput.value);
+                const gender = genderSelect.value;
+                const activityLevel = activitySelect.value;
+                const heightUnit = heightUnitSelect.value;
+                const weightUnit = weightUnitSelect.value;
+
+                if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0 || isNaN(age) || age < 0) {
+                    alert('Please enter valid positive numbers for height, weight, and age.');
+                    resetAllOutputFields();
+                    return;
+                }
+
+                // Convert to metric (cm and kg) for calculation
+                let heightInCm = height;
+                let weightInKg = weight;
+
+                if (heightUnit === 'inches') {
+                    heightInCm *= 2.54; // inches to cm
+                }
+                if (weightUnit === 'lbs') {
+                    weightInKg *= 0.453592; // lbs to kg
+                }
+
+                // BMI calculation: weight (kg) / (height (m))^2
+                const heightInMeters = heightInCm / 100;
+                const bmi = (weightInKg / (heightInMeters * heightInMeters)).toFixed(2);
+
+                bmiValueSpan.textContent = bmi;
+                displayBMICategory(parseFloat(bmi), age);
+                calculateIdealWeight(heightInMeters, gender, weightUnit);
+                calculateAdditionalMetrics(parseFloat(bmi), heightInMeters, weightInKg, weightUnit);
+                calculateCalorieTargets(weightInKg, heightInCm, age, gender, activityLevel);
+                calculateTargetHeartRate(age);
+            }
+
+            function resetAllOutputFields() {
+                bmiValueSpan.textContent = '--';
+                bmiCategorySpan.textContent = '--';
+                idealWeightResult.textContent = '';
+                healthyWeightRangeSpan.textContent = '';
+                weightToAdjustSpan.textContent = '';
+                bmiPrimeValueSpan.textContent = '--';
+                ponderalIndexValueSpan.textContent = '--';
+                bmiIndicator.style.left = '0%';
+                maintainCaloriesSpan.textContent = '--';
+                mildLossCaloriesSpan.textContent = '--';
+                mildLossPercentageSpan.textContent = '--%';
+                normalLossCaloriesSpan.textContent = '--';
+                normalLossPercentageSpan.textContent = '--%';
+                extremeLossCaloriesSpan.textContent = '--';
+                extremeLossPercentageSpan.textContent = '--%';
+                mildGainCaloriesSpan.textContent = '--';
+                mildGainPercentageSpan.textContent = '--%';
+                normalGainCaloriesSpan.textContent = '--';
+                normalGainPercentageSpan.textContent = '--%';
+                extremeGainCaloriesSpan.textContent = '--';
+                extremeGainPercentageSpan.textContent = '--%';
+                maxHeartRateValueSpan.textContent = '-- bpm';
+                moderateHrRangeSpan.textContent = '-- bpm';
+                vigorousHrRangeSpan.textContent = '-- bpm';
+            }
+
+            function resetAllFieldsAndInputs() {
+                heightInput.value = '';
+                weightInput.value = '';
+                ageInput.value = '';
+                genderSelect.value = 'male'; // Reset to default
+                activitySelect.value = 'sedentary'; // Reset to default
+                heightUnitSelect.value = 'cm'; // Reset to default
+                weightUnitSelect.value = 'kg'; // Reset to default
+                resetAllOutputFields();
+            }
+
+            function displayBMICategory(bmi, age) {
+                let category = '';
+                let indicatorPosition = 0;
+
+                if (bmi < 16) {
+                    category = 'Severe Thinness';
+                    bmiCategorySpan.style.color = '#f0c200';
+                    indicatorPosition = (bmi / 16) * 12.5;
+                } else if (bmi >= 16 && bmi < 17) {
+                    category = 'Moderate Thinness';
+                    bmiCategorySpan.style.color = '#f0c200';
+                    indicatorPosition = 12.5 + ((bmi - 16) / (17 - 16)) * 12.5;
+                } else if (bmi >= 17 && bmi < 18.5) {
+                    category = 'Mild Thinness';
+                    bmiCategorySpan.style.color = '#f0c200';
+                    indicatorPosition = 25 + ((bmi - 17) / (18.5 - 17)) * 12.5;
+                } else if (bmi >= 18.5 && bmi < 25) {
+                    category = 'Normal';
+                    bmiCategorySpan.style.color = '#6ee700';
+                    indicatorPosition = 37.5 + ((bmi - 18.5) / (25 - 18.5)) * 25;
+                } else if (bmi >= 25 && bmi < 30) {
+                    category = 'Overweight';
+                    bmiCategorySpan.style.color = '#ff9d00';
+                    indicatorPosition = 62.5 + ((bmi - 25) / (30 - 25)) * 12.5;
+                } else if (bmi >= 30 && bmi < 35) {
+                    category = 'Obese Class I';
+                    bmiCategorySpan.style.color = '#ff3e00';
+                    indicatorPosition = 75 + ((bmi - 30) / (35 - 30)) * 12.5;
+                } else if (bmi >= 35 && bmi < 40) {
+                    category = 'Obese Class II';
+                    bmiCategorySpan.style.color = '#ff3e00';
+                    indicatorPosition = 87.5 + ((bmi - 35) / (40 - 35)) * 12.5;
+                } else {
+                    category = 'Obese Class III';
+                    bmiCategorySpan.style.color = '#ff3e00';
+                    indicatorPosition = 100;
+                }
+
+                if (age < 18) {
+                    category += " (for children/teens, interpretation is percentile-based)";
+                } else if (age >= 65) {
+                    category += " (for older adults, normal range may be slightly higher)";
+                }
+
+                bmiCategorySpan.textContent = category;
+                bmiIndicator.style.left = `${indicatorPosition}%`;
+            }
+
+            function calculateIdealWeight(heightInMeters, gender, originalWeightUnit) {
+                let idealWeightKgLower;
+                let idealWeightKgUpper;
+
+                const heightInInches = heightInMeters * 39.3701;
+
+                if (gender === 'male') {
+                    idealWeightKgLower = 50 + Math.max(0, (heightInInches - 60)) * 2.3;
+                    idealWeightKgUpper = idealWeightKgLower + 5;
+                } else {
+                    idealWeightKgLower = 45.5 + Math.max(0, (heightInInches - 60)) * 2.2;
+                    idealWeightKgUpper = idealWeightKgLower + 5;
+                }
+
+                let lowerWeightDisplay, upperWeightDisplay;
+                if (originalWeightUnit === 'lbs') {
+                    lowerWeightDisplay = (idealWeightKgLower * 2.20462).toFixed(1);
+                    upperWeightDisplay = (idealWeightKgUpper * 2.20462).toFixed(1);
+                } else {
+                    lowerWeightDisplay = idealWeightKgLower.toFixed(1);
+                    upperWeightDisplay = idealWeightKgUpper.toFixed(1);
+                }
+
+                idealWeightResult.textContent = `Ideal Weight: ${lowerWeightDisplay} - ${upperWeightDisplay} ${originalWeightUnit}`;
+            }
+
+            function calculateAdditionalMetrics(bmi, heightInMeters, currentWeightInKg, originalWeightUnit) {
+                const healthyBmiLower = 18.5;
+                const healthyBmiUpper = 24.9;
+                const healthyWeightKgLower = (healthyBmiLower * heightInMeters * heightInMeters);
+                const healthyWeightKgUpper = (healthyBmiUpper * heightInMeters * heightInMeters);
+
+                let healthyWeightDisplayLower, healthyWeightDisplayUpper;
+                if (originalWeightUnit === 'lbs') {
+                    healthyWeightDisplayLower = (healthyWeightKgLower * 2.20462).toFixed(1);
+                    healthyWeightDisplayUpper = (healthyWeightKgUpper * 2.20462).toFixed(1);
+                } else {
+                    healthyWeightDisplayLower = healthyWeightKgLower.toFixed(1);
+                    healthyWeightDisplayUpper = healthyWeightKgUpper.toFixed(1);
+                }
+                healthyWeightRangeSpan.textContent = `Healthy Weight for Height: ${healthyWeightDisplayLower} - ${healthyWeightDisplayUpper} ${originalWeightUnit}`;
+
+                const targetBmiForAdjustment = 25;
+                const targetWeightKg = (targetBmiForAdjustment * heightInMeters * heightInMeters);
+                const weightDifferenceKg = currentWeightInKg - targetWeightKg;
+
+                let weightDifferenceDisplay;
+                if (originalWeightUnit === 'lbs') {
+                    weightDifferenceDisplay = (Math.abs(weightDifferenceKg) * 2.20462).toFixed(1);
+                } else {
+                    weightDifferenceDisplay = Math.abs(weightDifferenceKg).toFixed(1);
+                }
+
+                if (weightDifferenceKg > 0.1) {
+                    weightToAdjustSpan.textContent = `Lose ${weightDifferenceDisplay} ${originalWeightUnit} to reach a BMI of ${targetBmiForAdjustment} kg/m²`;
+                } else if (weightDifferenceKg < -0.1) {
+                    weightToAdjustSpan.textContent = `Gain ${weightDifferenceDisplay} ${originalWeightUnit} to reach a BMI of ${targetBmiForAdjustment} kg/m²`;
+                } else {
+                    weightToAdjustSpan.textContent = `You are at or near a BMI of ${targetBmiForAdjustment} kg/m²!`;
+                }
+
+                const bmiPrime = (bmi / 25).toFixed(2);
+                bmiPrimeValueSpan.textContent = bmiPrime;
+
+                const ponderalIndex = (currentWeightInKg / (heightInMeters * heightInMeters * heightInMeters)).toFixed(2);
+                ponderalIndexValueSpan.textContent = `${ponderalIndex} kg/m³`;
+            }
+
+            function calculateCalorieTargets(weightInKg, heightInCm, age, gender, activityLevel) {
+                let bmr;
+                const CALORIES_PER_KG_FAT = 7700;
+                const DAYS_IN_WEEK = 7;
+
+                if (gender === 'male') {
+                    bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) + 5;
+                } else {
+                    bmr = (10 * weightInKg) + (6.25 * heightInCm) - (5 * age) - 161;
+                }
+
+                let activityFactor;
+                switch (activityLevel) {
+                    case 'sedentary':
+                        activityFactor = 1.2;
+                        break;
+                    case 'light':
+                        activityFactor = 1.375;
+                        break;
+                    case 'moderate':
+                        activityFactor = 1.55;
+                        break;
+                    case 'very':
+                        activityFactor = 1.725;
+                        break;
+                    case 'extra':
+                        activityFactor = 1.9;
+                        break;
+                    default:
+                        activityFactor = 1.2;
+                }
+
+                const maintainCalories = Math.round(bmr * activityFactor);
+                maintainCaloriesSpan.textContent = `${maintainCalories} Calories/day`;
+
+                // --- Weight Loss Targets ---
+                const mildLossDeficit = (0.25 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+                const normalLossDeficit = (0.5 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+                const extremeLossDeficit = (1 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+
+                const mildLossCalories = Math.round(maintainCalories - mildLossDeficit);
+                const normalLossCalories = Math.round(maintainCalories - normalLossDeficit);
+                const extremeLossCalories = Math.round(maintainCalories - extremeLossDeficit);
+
+                mildLossCaloriesSpan.textContent = `${mildLossCalories} Calories/day`;
+                normalLossCaloriesSpan.textContent = `${normalLossCalories} Calories/day`;
+                extremeLossCaloriesSpan.textContent = `${Math.max(1200, extremeLossCalories)} Calories/day`; // Ensure min 1200 cal for extreme loss
+
+                mildLossPercentageSpan.textContent = `${Math.round((mildLossCalories / maintainCalories) * 100)}%`;
+                normalLossPercentageSpan.textContent = `${Math.round((normalLossCalories / maintainCalories) * 100)}%`;
+                extremeLossPercentageSpan.textContent = `${Math.round((extremeLossCalories / maintainCalories) * 100)}%`;
+
+                // --- Weight Gain Targets ---
+                const mildGainSurplus = (0.25 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+                const normalGainSurplus = (0.5 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+                const extremeGainSurplus = (1 * CALORIES_PER_KG_FAT / DAYS_IN_WEEK);
+
+                const mildGainCalories = Math.round(maintainCalories + mildGainSurplus);
+                const normalGainCalories = Math.round(maintainCalories + normalGainSurplus);
+                const extremeGainCalories = Math.round(maintainCalories + extremeGainSurplus);
+
+                mildGainCaloriesSpan.textContent = `${mildGainCalories} Calories/day`;
+                normalGainCaloriesSpan.textContent = `${normalGainCalories} Calories/day`;
+                extremeGainCaloriesSpan.textContent = `${extremeGainCalories} Calories/day`;
+
+                mildGainPercentageSpan.textContent = `${Math.round((mildGainCalories / maintainCalories) * 100)}%`;
+                normalGainPercentageSpan.textContent = `${Math.round((normalGainCalories / maintainCalories) * 100)}%`;
+                extremeGainPercentageSpan.textContent = `${Math.round((extremeGainCalories / maintainCalories) * 100)}%`;
+            }
+
+            // Function for Heart Rate Calculation
+            function calculateTargetHeartRate(age) {
+                const maxHR = 220 - age; // Maximum Heart Rate
+                maxHeartRateValueSpan.textContent = `${maxHR} bpm`;
+
+                // Moderate Intensity: 50% to 70% of MHR
+                const moderateHR_lower = Math.round(maxHR * 0.50);
+                const moderateHR_upper = Math.round(maxHR * 0.70);
+                moderateHrRangeSpan.textContent = `${moderateHR_lower} - ${moderateHR_upper} bpm`;
+
+                // Vigorous Intensity: 70% to 85% of MHR
+                const vigorousHR_lower = Math.round(maxHR * 0.70);
+                const vigorousHR_upper = Math.round(maxHR * 0.85);
+                vigorousHrRangeSpan.textContent = `${vigorousHR_lower} - ${vigorousHR_upper} bpm`;
+            }
+        });
+    </script>
+</body>
+</html>
