@@ -35,9 +35,9 @@ To run Health Pulse+ locally, simply:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/health-pulse-plus.git](https://github.com/YOUR_USERNAME/health-pulse-plus.git)
+    git clone [https://github.com/Boda1607/health-pulse-plus.git](https://github.com/Boda1607/health-pulse-plus.git)
     ```
-    (Replace `YOUR_USERNAME` with your actual GitHub username and `health-pulse-plus` with your repository name if different.)
+ 
 2.  **Navigate to the project directory:**
     ```bash
     cd health-pulse-plus
